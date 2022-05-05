@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
+    public InputField textField;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -36,6 +39,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        BestScoreText.text = "Best Score: " + Record.Instance.point.ToString() +
+         " Name: " + Record.Instance.bestName;
     }
 
     private void Update()
@@ -72,5 +77,50 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if(Record.Instance.point < m_Points){
+        Record.Instance.point = m_Points;
+        textField.gameObject.SetActive(true);
+        }
+    }
+
+    public void StoreName()
+    {
+        Record.Instance.bestName =  textField.text;
+    }
+
+    public void HideField()
+    {
+        textField.gameObject.SetActive(false);
+    }
+
+    public void SaveScore()
+    {
+        SaveData data = new SaveData();
+        data.bestScore = Record.Instance.point;
+        data.bestName = Record.Instance.bestName;
+
+        string json = JsonUtility.ToJson(data);
+    
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void LoadScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            Record.Instance.point = data.bestScore;
+            Record.Instance.bestName = data.bestName;
+        }
+    }
+
+    [System.Serializable]
+    class SaveData
+    {
+        public int bestScore;
+        public string bestName;
     }
 }
