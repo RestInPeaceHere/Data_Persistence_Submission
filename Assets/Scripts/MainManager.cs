@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class MainManager : MonoBehaviour
 {
@@ -39,6 +42,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        LoadScore();
         BestScoreText.text = "Best Score: " + Record.Instance.point.ToString() +
          " Name: " + Record.Instance.bestName;
     }
@@ -79,6 +83,7 @@ public class MainManager : MonoBehaviour
         GameOverText.SetActive(true);
         if(Record.Instance.point < m_Points){
         Record.Instance.point = m_Points;
+        SaveScore();
         textField.gameObject.SetActive(true);
         }
     }
@@ -86,6 +91,7 @@ public class MainManager : MonoBehaviour
     public void StoreName()
     {
         Record.Instance.bestName =  textField.text;
+        SaveScore();
     }
 
     public void HideField()
@@ -115,6 +121,16 @@ public class MainManager : MonoBehaviour
             Record.Instance.point = data.bestScore;
             Record.Instance.bestName = data.bestName;
         }
+    }
+
+    public void Exit()
+    {
+        SaveScore();
+        #if UNITY_EDITOR
+                EditorApplication.ExitPlaymode();
+        #else
+                Application.Quit(); // original code to quit Unity player
+        #endif
     }
 
     [System.Serializable]
